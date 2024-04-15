@@ -1,0 +1,7 @@
+*
+!entrypoint
+!entrypoint/entrypoint.sh
+!.gitignore
+!Dockerfile
+!LICENSE.md
+!README.md
