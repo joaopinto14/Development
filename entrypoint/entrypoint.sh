@@ -40,6 +40,13 @@ check_and_install_extension() {
   fi
 }
 
+# Function to clone a git repository
+clone_repo() {
+
+
+
+}
+
 # Main
 
 # Install the required PHP extensions
@@ -47,29 +54,30 @@ if [ -n "${PHP_EXTENSIONS}" ]; then
   check_and_install_extension
 fi
 
+# Check if the GITHUB_REPO environment variable is set
 if [ -n "${GITHUB_REPO}" ]; then
-
-  # Check if the directory /var/www/html is empty
+  # Check if the /var/www/html directory is empty
   if [ ! "$(ls -A . )" ]; then
     echo "Cloning the repository ${GITHUB_REPO}..."
-    # git clone the repository
+    # TODO Add the command to clone the repository here
+    # clone_repo
   else
-    # Verificar se dentro do diretorio "/var/www/html" existe um repositorio git
-    if [ -d ".git" ]; then
-      # Verificar se o repositorio git é o mesmo que foi passado como variavel de ambiente
-      if [ "$(git -C /var/www/html remote get-url origin)" == "${GITHUB_REPO}" ]; then
-        # atualizar o repositorio git
-        echo "Atualizando o repositório ${GITHUB_REPO}..."
+    # Check if there is a git repository in the /var/www/html directory
+    if git -C /var/www/html rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+      # Check if the git repository is the same as the one passed as an environment variable
+      if [ "$(git -C /var/www/html remote get-url origin | sed -n 's/.*:\/\/github.com\/\([^\/]*\/[^\/]*\)\.git.*/\1/p')" == "${GITHUB_REPO}" ]; then
+        # Update the git repository
+        echo "Updating the repository ${GITHUB_REPO}..."
+        # TODO Add the command to update the repository here
       else
-        echo "O diretório '/var/www/html' não está vazio e contém um repositório git diferente do que foi passado como variável de ambiente."
+        echo "The '/var/www/html' directory is not empty and contains a different git repository than the one passed as an environment variable."
         exit 1
       fi
     else
-      echo "O diretório '/var/www/html' não está vazio e não contém um repositório git."
+      echo "The '/var/www/html' directory is not empty and does not contain a git repository."
       exit 1
     fi
   fi
-
 fi
 
 exec php-fpm -F
