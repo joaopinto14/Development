@@ -35,8 +35,9 @@ COPY entrypoint/entrypoint.sh /usr/local/bin/entrypoint.sh
 # Make the startup script executable
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Set the default directory for the safe command
-RUN git config --global --add safe.directory /var/www/html
+# Add global git configurations
+RUN git config --global --add safe.directory /var/www/html && \
+    git config --global --add advice.detachedHead false
 
 # Set the default working directory
 WORKDIR /var/www/html
