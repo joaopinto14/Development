@@ -4,6 +4,9 @@
 PHP_EXTENSIONS=${PHP_EXTENSIONS:-}
 
 GITHUB_REPO=${GITHUB_REPO:-}
+GITHUB_USERNAME=${GITHUB_USERNAME:-}
+GITHUB_TOKEN=${GITHUB_TOKEN:-}
+GITHUB_BRANCH_TAG=${GITHUB_BRANCH_TAG:-}
 
 # Functions
 
@@ -42,50 +45,65 @@ check_and_install_extension() {
 
 # Function to clone a git repository
 clone_repo() {
-  ### Check if the repository is private or public ###
   # Check if the environment variables GITHUB_USERNAME and GITHUB_TOKEN are set
   if [ -n "${GITHUB_USERNAME}" ] && [ -n "${GITHUB_TOKEN}" ]; then
     # Make a request to the GitHub API using the authentication token
-    response=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" "https://api.github.com/repos/${GITHUB_REPO}")
-    # Check if the response contains the error message "Bad credentials"
-    if echo "${response}" | grep -q "\"message\": \"Bad credentials\""; then
-      # If the error message is present, print an error message and terminate the script
+    response=$(curl -sf -H "Authorization: token ${GITHUB_TOKEN}" "https://api.github.com/repos/${GITHUB_REPO}")
+    # Check if the response is empty
+    if [ -z "${response}" ]; then
+      # If the response is empty, print an error message and terminate the script
       echo "Bad credentials, please check the GITHUB_USERNAME and GITHUB_TOKEN environment variables."
       exit 1
     fi
+    # Make a request to the GitHub API to get the branches and tags
+    if [ -n "${GITHUB_BRANCH_TAG}" ]; then
+      branches=$(curl -sf -H "Authorization: token ${GITHUB_TOKEN}" "https://api.github.com/repos/${GITHUB_REPO}/branches" | jq -r '.[].name' | tr '\n' ' ')
+      tags=$(curl -sf -H "Authorization: token ${GITHUB_TOKEN}" "https://api.github.com/repos/${GITHUB_REPO}/tags" | jq -r '.[].name' | tr '\n' ' ')
+      # Check if the GITHUB_BRANCH_TAG is in the branches or tags
+      if ! echo "${branches}" | grep -q "${GITHUB_BRANCH_TAG}" && ! echo "${tags}" | grep -q "${GITHUB_BRANCH_TAG}"; then
+        echo "Branch/tag ${GITHUB_BRANCH_TAG} not found in the repository ${GITHUB_REPO}."
+        exit 1
+      fi
+    fi
+
     # If authentication is successful, set the repository URL using the username and token
     repo_url="https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git"
   else
     # If the environment variables GITHUB_USERNAME and GITHUB_TOKEN are not set, make a request to the GitHub API without authentication
-    response=$(curl -s "https://api.github.com/repos/${GITHUB_REPO}")
-    # Check if the response contains the error message "Not Found"
-    if echo "${response}" | grep -q "\"message\": \"Not Found\""; then
-      # If the error message is present, print an error message and terminate the script
+    response=$(curl -sf "https://api.github.com/repos/${GITHUB_REPO}")
+    # Check if the response is empty
+    if [ -z "${response}" ]; then
+      # If the response is empty, print an error message and terminate the script
       echo "ERROR: The repository ${GITHUB_REPO} is private. Please set the GITHUB_USERNAME and GITHUB_TOKEN environment variables."
       exit 1
+    fi
+    # Make a request to the GitHub API to get the branches and tags
+    if [ -n "${GITHUB_BRANCH_TAG}" ]; then
+      branches=$(curl -sf "https://api.github.com/repos/${GITHUB_REPO}/branches" | jq -r '.[].name' | tr '\n' ' ')
+      tags=$(curl -sf "https://api.github.com/repos/${GITHUB_REPO}/tags" | jq -r '.[].name' | tr '\n' ' ')
+      # Check if the GITHUB_BRANCH_TAG is in the branches or tags
+      if ! echo "${branches}" | grep -q "${GITHUB_BRANCH_TAG}" && ! echo "${tags}" | grep -q "${GITHUB_BRANCH_TAG}"; then
+        echo "Branch/tag ${GITHUB_BRANCH_TAG} not found in the repository ${GITHUB_REPO}."
+        exit 1
+      fi
     fi
     # If the request is successful, set the repository URL without authentication
     repo_url="https://github.com/${GITHUB_REPO}.git"
   fi
 
-  ### Clone the repository ###
-  # Build the git clone command
+  # Check if the GITHUB_BRANCH_TAG environment variable is set
   if [ -n "${GITHUB_BRANCH_TAG}" ]; then
     git_clone_cmd="git clone -q -b ${GITHUB_BRANCH_TAG} ${repo_url} ."
   else
     git_clone_cmd="git clone -q ${repo_url} ."
   fi
 
-  # Execute the git clone command
-  ${git_clone_cmd}
-
-  # Check the exit status of the git clone command
-  if [ $? -eq 0 ]; then
-    echo "Clone executed successfully."
-  else
+  # Execute the git clone command and check the exit status directly
+  if ! ${git_clone_cmd}; then
     echo "Clone failed."
     exit 1
   fi
+  echo "Clone executed successfully."
 }
 
 # Main
@@ -105,7 +123,7 @@ if [ -n "${GITHUB_REPO}" ]; then
     # Check if there is a git repository in the /var/www/html directory
     if git -C /var/www/html rev-parse --is-inside-work-tree > /dev/null 2>&1; then
       # Check if the git repository is the same as the one passed as an environment variable
-      if [ "$(git -C /var/www/html remote get-url origin | sed -n 's/.*:\/\/[^@]*@github.com\/\([^\/]*\/[^\/]*\)\.git.*/\1/p')" == "${GITHUB_REPO}" ]; then
+      if [ "$(git -C /var/www/html remote get-url origin | sed -n 's/.*:\/\/\([^@]*@\)\?github.com\/\([^\/]*\/[^\/]*\)\.git.*/\2/p')" == "${GITHUB_REPO}" ]; then
         # Update the git repository
         echo "Updating the repository ${GITHUB_REPO}..."
         # TODO Add the command to update the repository here
