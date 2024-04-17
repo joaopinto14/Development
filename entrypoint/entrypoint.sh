@@ -46,7 +46,7 @@ clone_repo() {
   # Check if the environment variables GITHUB_USERNAME and GITHUB_TOKEN are set
   if [ -n "${GITHUB_USERNAME}" ] && [ -n "${GITHUB_TOKEN}" ]; then
     # Make a request to the GitHub API using the authentication token
-    response=$(curl -sf -H "Authorization: token ${GITHUB_TOKEN}" "https://api.github.com/repos/${GITHUB_REPO}")
+    response=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" "https://api.github.com/repos/${GITHUB_REPO}")
     # Check if the response contains the error message "Bad credentials"
     if echo "${response}" | grep -q "\"message\": \"Bad credentials\""; then
       # If the error message is present, print an error message and terminate the script
@@ -57,7 +57,7 @@ clone_repo() {
     repo_url="https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git"
   else
     # If the environment variables GITHUB_USERNAME and GITHUB_TOKEN are not set, make a request to the GitHub API without authentication
-    response=$(curl -sf "https://api.github.com/repos/${GITHUB_REPO}")
+    response=$(curl -s "https://api.github.com/repos/${GITHUB_REPO}")
     # Check if the response contains the error message "Not Found"
     if echo "${response}" | grep -q "\"message\": \"Not Found\""; then
       # If the error message is present, print an error message and terminate the script
@@ -105,7 +105,7 @@ if [ -n "${GITHUB_REPO}" ]; then
     # Check if there is a git repository in the /var/www/html directory
     if git -C /var/www/html rev-parse --is-inside-work-tree > /dev/null 2>&1; then
       # Check if the git repository is the same as the one passed as an environment variable
-      if [ "$(git -C /var/www/html remote get-url origin | sed -n 's/.*:\/\/github.com\/\([^\/]*\/[^\/]*\)\.git.*/\1/p')" == "${GITHUB_REPO}" ]; then
+      if [ "$(git -C /var/www/html remote get-url origin | sed -n 's/.*:\/\/[^@]*@github.com\/\([^\/]*\/[^\/]*\)\.git.*/\1/p')" == "${GITHUB_REPO}" ]; then
         # Update the git repository
         echo "Updating the repository ${GITHUB_REPO}..."
         # TODO Add the command to update the repository here

@@ -14,7 +14,8 @@ RUN apk update && apk add --no-cache \
     npm \
     yarn \
     nano \
-    github-cli && \
+    github-cli \
+    curl && \
     rm -rf /var/cache/apk/*
 
 # Install Composer
