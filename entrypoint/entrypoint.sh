@@ -7,6 +7,7 @@ GITHUB_REPO=${GITHUB_REPO:-}
 GITHUB_USERNAME=${GITHUB_USERNAME:-}
 GITHUB_TOKEN=${GITHUB_TOKEN:-}
 GITHUB_BRANCH_TAG=${GITHUB_BRANCH_TAG:-}
+GITHUB_UPDATE_AUTO=${GITHUB_UPDATE_AUTO:-false}
 
 # Functions
 
@@ -106,6 +107,28 @@ clone_repo() {
   echo "Clone executed successfully."
 }
 
+# Function to update a git repository
+update_repo() {
+  # Get the current commit hash
+  current_commit=$(git rev-parse HEAD)
+
+  # Get the tag(s), if any, that contain the current commit
+  current_tag=$(git tag --contains "${current_commit}")
+
+  # Get the latest tag
+  latest_tag=$(git describe --tags --abbrev=0)
+
+  if [ -n "${current_tag}" ]; then
+    # If it's a tag, do git fetch and git checkout to the latest tag
+    if [ "${current_tag}" != "${latest_tag}" ]; then
+      git fetch && git checkout "${latest_tag}"
+    fi
+  else
+    # If it's a branch, do git pull with --ff-only
+    git pull --ff-only
+  fi
+}
+
 # Main
 
 # Install the required PHP extensions
@@ -124,9 +147,9 @@ if [ -n "${GITHUB_REPO}" ]; then
     if git -C /var/www/html rev-parse --is-inside-work-tree > /dev/null 2>&1; then
       # Check if the git repository is the same as the one passed as an environment variable
       if [ "$(git -C /var/www/html remote get-url origin | sed -n 's/.*:\/\/\([^@]*@\)\?github.com\/\([^\/]*\/[^\/]*\)\.git.*/\2/p')" == "${GITHUB_REPO}" ]; then
-        # Update the git repository
-        echo "Updating the repository ${GITHUB_REPO}..."
-        # TODO Add the command to update the repository here
+        if [ "${GITHUB_UPDATE_AUTO}" = "true" ]; then
+            update_repo
+        fi
       else
         echo "The '/var/www/html' directory is not empty and contains a different git repository than the one passed as an environment variable."
         exit 1
