@@ -110,39 +110,54 @@ clone_repo() {
 # Function to update a git repository
 update_repo() {
   echo "Checking for updates..."
+
   # Fetch the remote references
-  if ! git fetch; then
+  if ! git fetch --quiet; then
     echo "Failed to fetch the remote references."
     exit 1
   fi
 
-  # Check the status of the repository
-  status=$(git status -uno)
-  echo "Status: ${status}"
+  # Determine if the repository is on a branch or tag
+  HEAD_TYPE=$(git rev-parse --abbrev-ref HEAD)
 
-#  # Check if the repository is up to date
-#  if ! echo "${status}" | grep -q 'Your branch is up to date'; then
-#    echo "There are updates available for the repository."
-#
-#    # Check if the current HEAD is a tag
-#    if git describe --tags --exact-match HEAD > /dev/null 2>&1; then
-#      # If it's a tag, get the latest tag and checkout to it
-#      latest_tag=$(git describe --tags --abbrev=0)
-#      if ! git checkout "${latest_tag}"; then
-#        echo "Failed to checkout to the latest tag."
-#        exit 1
-#      fi
-#    else
-#      # If it's a branch, do git pull
-#      if ! git pull; then
-#        echo "Failed to pull the latest changes."
-#        exit 1
-#      fi
-#    fi
-#    echo "Repository updated successfully."
-#  else
-#    echo "The repository is up to date."
-#  fi
+  if [ "$HEAD_TYPE" != "HEAD" ]; then
+    # The repository is on a branch
+    echo "The repository is on branch: $HEAD_TYPE"
+
+    # Check if the branch is up to date
+    UPSTREAM_COMMITS=$(git rev-list --left-right --count origin/$HEAD_TYPE...HEAD | awk '{print $1}')
+    if [ "$UPSTREAM_COMMITS" -gt 0 ]; then
+      echo "There are $UPSTREAM_COMMITS commit(s) to be pulled from the repository."
+      # Pull the latest changes
+      if ! git pull --quiet; then
+        echo "Failed to pull the latest changes."
+        exit 1
+      fi
+      echo "Repository updated successfully."
+    else
+      echo "The branch $HEAD_TYPE is up to date."
+    fi
+  else
+    # The repository is on a tag
+    CURRENT_TAG=$(git describe --tags --exact-match HEAD 2>/dev/null)
+    echo "The repository is on tag: $CURRENT_TAG"
+
+    # Get the latest tag
+    LATEST_TAG=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+
+    # Check if the tag is up to date
+    if [ "$CURRENT_TAG" != "$LATEST_TAG" ]; then
+      echo "There is a newer tag ($LATEST_TAG) available for the repository."
+      # Checkout to the latest tag
+      if ! git checkout "$LATEST_TAG" --quiet; then
+        echo "Failed to checkout to the latest tag."
+        exit 1
+      fi
+      echo "Repository updated successfully."
+    else
+      echo "The tag $CURRENT_TAG is up to date."
+    fi
+  fi
 }
 
 # Main
