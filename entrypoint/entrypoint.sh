@@ -125,7 +125,7 @@ update_repo() {
     echo "The repository is on branch: $HEAD_TYPE"
 
     # Check if the branch is up to date
-    UPSTREAM_COMMITS=$(git rev-list --left-right --count origin/$HEAD_TYPE...HEAD | awk '{print $1}')
+    UPSTREAM_COMMITS=$(git rev-list --left-right --count origin/"$HEAD_TYPE"...HEAD | awk '{print $1}')
     if [ "$UPSTREAM_COMMITS" -gt 0 ]; then
       echo "There are $UPSTREAM_COMMITS commit(s) to be pulled from the repository."
       # Pull the latest changes
