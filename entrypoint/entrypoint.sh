@@ -109,24 +109,40 @@ clone_repo() {
 
 # Function to update a git repository
 update_repo() {
-  # Get the current commit hash
-  current_commit=$(git rev-parse HEAD)
-
-  # Get the tag(s), if any, that contain the current commit
-  current_tag=$(git tag --contains "${current_commit}")
-
-  # Get the latest tag
-  latest_tag=$(git describe --tags --abbrev=0)
-
-  if [ -n "${current_tag}" ]; then
-    # If it's a tag, do git fetch and git checkout to the latest tag
-    if [ "${current_tag}" != "${latest_tag}" ]; then
-      git fetch && git checkout "${latest_tag}"
-    fi
-  else
-    # If it's a branch, do git pull with --ff-only
-    git pull --ff-only
+  echo "Checking for updates..."
+  # Fetch the remote references
+  if ! git fetch; then
+    echo "Failed to fetch the remote references."
+    exit 1
   fi
+
+  # Check the status of the repository
+  status=$(git status -uno)
+  echo "Status: ${status}"
+
+#  # Check if the repository is up to date
+#  if ! echo "${status}" | grep -q 'Your branch is up to date'; then
+#    echo "There are updates available for the repository."
+#
+#    # Check if the current HEAD is a tag
+#    if git describe --tags --exact-match HEAD > /dev/null 2>&1; then
+#      # If it's a tag, get the latest tag and checkout to it
+#      latest_tag=$(git describe --tags --abbrev=0)
+#      if ! git checkout "${latest_tag}"; then
+#        echo "Failed to checkout to the latest tag."
+#        exit 1
+#      fi
+#    else
+#      # If it's a branch, do git pull
+#      if ! git pull; then
+#        echo "Failed to pull the latest changes."
+#        exit 1
+#      fi
+#    fi
+#    echo "Repository updated successfully."
+#  else
+#    echo "The repository is up to date."
+#  fi
 }
 
 # Main
@@ -148,7 +164,7 @@ if [ -n "${GITHUB_REPO}" ]; then
       # Check if the git repository is the same as the one passed as an environment variable
       if [ "$(git -C /var/www/html remote get-url origin | sed -n 's/.*:\/\/\([^@]*@\)\?github.com\/\([^\/]*\/[^\/]*\)\.git.*/\2/p')" == "${GITHUB_REPO}" ]; then
         if [ "${GITHUB_UPDATE_AUTO}" = "true" ]; then
-            update_repo
+          update_repo
         fi
       else
         echo "The '/var/www/html' directory is not empty and contains a different git repository than the one passed as an environment variable."
