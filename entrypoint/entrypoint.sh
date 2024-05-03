@@ -180,6 +180,9 @@ if [ -n "${GITHUB_REPO}" ]; then
       if [ "$(git -C /var/www/html remote get-url origin | sed -n 's/.*:\/\/\([^@]*@\)\?github.com\/\([^\/]*\/[^\/]*\)\.git.*/\2/p')" == "${GITHUB_REPO}" ]; then
         if [ "${GITHUB_UPDATE_AUTO}" = "true" ]; then
           update_repo
+        elif [ "${GITHUB_UPDATE_AUTO}" != "false" ]; then
+          echo "The GITHUB_UPDATE_AUTO environment variable must be set to 'true' or 'false'."
+          exit 1
         fi
       else
         echo "The '/var/www/html' directory is not empty and contains a different git repository than the one passed as an environment variable."
