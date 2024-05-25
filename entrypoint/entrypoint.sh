@@ -12,6 +12,7 @@ GITHUB_UPDATE_AUTO=${GITHUB_UPDATE_AUTO:-false}
 COMPOSER_INSTALL=${COMPOSER_INSTALL:-false}
 
 NPM_INSTALL=${NPM_INSTALL:-false}
+NPM_COMMAND_TO_BUILD=${NPM_COMAND_TO_BUILD:-}
 
 # Functions
 
@@ -196,6 +197,29 @@ install_npm_dependencies() {
   fi
 }
 
+# Function to build the application
+build_application() {
+  if [ -f /var/www/html/package.json ]; then
+    echo "Building the application..."
+    if ! jq -e .scripts[\"${NPM_COMMAND_TO_BUILD}\"] /var/www/html/package.json >/dev/null 2>&1; then
+      echo "The command ${NPM_COMMAND_TO_BUILD} is not defined in the package.json file."
+      exit 1
+    fi
+    if npm run "${NPM_COMMAND_TO_BUILD}"; then
+      echo "Command 'npm run ${NPM_COMMAND_TO_BUILD}' executed successfully."
+    else
+      echo "Failed to build the application."
+      exit 1
+    fi
+  else
+    echo "The 'package.json' file was not found in the '/var/www/html' directory."
+    exit 1
+  fi
+}
+
+
+# End of functions
+
 # Main
 
 # Install the required PHP extensions
@@ -245,6 +269,11 @@ if [ "${NPM_INSTALL}" = "true" ]; then
 elif [ "${NPM_INSTALL}" != "false" ]; then
   echo "The NPM_INSTALL environment variable must be set to 'true' or 'false'."
   exit 1
+fi
+
+# Check if the NPM_COMMAND_TO_BUILD environment variable is set
+if [ -n "${NPM_COMMAND_TO_BUILD}" ]; then
+  build_application
 fi
 
 exec php-fpm -F
