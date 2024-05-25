@@ -10,6 +10,7 @@ GITHUB_BRANCH_TAG=${GITHUB_BRANCH_TAG:-}
 GITHUB_UPDATE_AUTO=${GITHUB_UPDATE_AUTO:-false}
 
 COMPOSER_INSTALL=${COMPOSER_INSTALL:-false}
+
 NPM_INSTALL=${NPM_INSTALL:-false}
 
 # Functions
@@ -163,6 +164,38 @@ update_repo() {
   fi
 }
 
+# Function to install Composer dependencies
+install_composer_dependencies() {
+  if [ -f /var/www/html/composer.json ]; then
+    echo "Installing Composer dependencies..."
+    if composer install --no-dev --no-interaction --no-progress --no-suggest; then
+      echo "Composer dependencies installed successfully."
+    else
+      echo "Failed to install Composer dependencies."
+      exit 1
+    fi
+  else
+    echo "The 'composer.json' file was not found in the '/var/www/html' directory."
+    exit 1
+  fi
+}
+
+# Function to install NPM dependencies
+install_npm_dependencies() {
+  if [ -f /var/www/html/package.json ]; then
+    echo "Installing NPM dependencies..."
+    if npm install --no-audit --no-fund --no-optional --no-package-lock --no-progress; then
+      echo "NPM dependencies installed successfully."
+    else
+      echo "Failed to install NPM dependencies."
+      exit 1
+    fi
+  else
+    echo "The 'package.json' file was not found in the '/var/www/html' directory."
+    exit 1
+  fi
+}
+
 # Main
 
 # Install the required PHP extensions
@@ -200,19 +233,7 @@ fi
 
 # Check if the COMPOSER_INSTALL environment variable is set
 if [ "${COMPOSER_INSTALL}" = "true" ]; then
-  # Check if the composer.json file exists
-  if [ -f /var/www/html/composer.json ]; then
-    echo "Installing Composer dependencies..."
-    if composer install --no-dev --no-interaction --no-progress --no-suggest; then
-      echo "Composer dependencies installed successfully."
-    else
-      echo "Failed to install Composer dependencies."
-      exit 1
-    fi
-  else
-    echo "The 'composer.json' file was not found in the '/var/www/html' directory."
-    exit 1
-  fi
+  install_composer_dependencies
 elif [ "${COMPOSER_INSTALL}" != "false" ]; then
   echo "The COMPOSER_INSTALL environment variable must be set to 'true' or 'false'."
   exit 1
@@ -220,19 +241,7 @@ fi
 
 # Check if the NPM_INSTALL environment variable is set
 if [ "${NPM_INSTALL}" = "true" ]; then
-  # Check if the package.json file exists
-  if [ -f /var/www/html/package.json ]; then
-    echo "Installing NPM dependencies..."
-    if npm install --no-audit --no-fund --no-optional --no-package-lock --no-progress; then
-      echo "NPM dependencies installed successfully."
-    else
-      echo "Failed to install NPM dependencies."
-      exit 1
-    fi
-  else
-    echo "The 'package.json' file was not found in the '/var/www/html' directory."
-    exit 1
-  fi
+  install_npm_dependencies
 elif [ "${NPM_INSTALL}" != "false" ]; then
   echo "The NPM_INSTALL environment variable must be set to 'true' or 'false'."
   exit 1
