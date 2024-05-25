@@ -202,8 +202,12 @@ if [ "${COMPOSER_INSTALL}" = "true" ]; then
   # Check if the composer.json file exists
   if [ -f /var/www/html/composer.json ]; then
     echo "Installing Composer dependencies..."
-    composer install --no-dev --no-interaction --no-progress --no-suggest
-    echo "Composer dependencies installed successfully."
+    if composer install --no-dev --no-interaction --no-progress --no-suggest; then
+      echo "Composer dependencies installed successfully."
+    else
+      echo "Failed to install Composer dependencies."
+      exit 1
+    fi
   else
     echo "The 'composer.json' file was not found in the '/var/www/html' directory."
     exit 1
