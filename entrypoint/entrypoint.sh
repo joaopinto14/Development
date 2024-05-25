@@ -9,6 +9,8 @@ GITHUB_TOKEN=${GITHUB_TOKEN:-}
 GITHUB_BRANCH_TAG=${GITHUB_BRANCH_TAG:-}
 GITHUB_UPDATE_AUTO=${GITHUB_UPDATE_AUTO:-false}
 
+COMPOSER_INSTALL=${COMPOSER_INSTALL:-false}
+
 # Functions
 
 # Function to check and install PHP extensions
@@ -193,6 +195,22 @@ if [ -n "${GITHUB_REPO}" ]; then
       exit 1
     fi
   fi
+fi
+
+# Check if the COMPOSER_INSTALL environment variable is set
+if [ "${COMPOSER_INSTALL}" = "true" ]; then
+  # Check if the composer.json file exists
+  if [ -f /var/www/html/composer.json ]; then
+    echo "Installing Composer dependencies..."
+    composer install --no-dev --no-interaction --no-progress --no-suggest
+    echo "Composer dependencies installed successfully."
+  else
+    echo "The 'composer.json' file was not found in the '/var/www/html' directory."
+    exit 1
+  fi
+elif [ "${COMPOSER_INSTALL}" != "false" ]; then
+  echo "The COMPOSER_INSTALL environment variable must be set to 'true' or 'false'."
+  exit 1
 fi
 
 exec php-fpm -F
