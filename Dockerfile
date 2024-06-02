@@ -16,7 +16,8 @@ RUN apk update && apk add --no-cache \
     nano \
     github-cli \
     curl \
-    jq && \
+    jq \
+    tzdata && \
     rm -rf /var/cache/apk/*
 
 # Install Composer

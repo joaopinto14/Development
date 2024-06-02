@@ -3,6 +3,8 @@
 # Define default values for environment variables if they are not set
 PHP_EXTENSIONS=${PHP_EXTENSIONS:-}
 
+TIMEZONE=${TIMEZONE:-UTC}
+
 GITHUB_REPO=${GITHUB_REPO:-}
 GITHUB_USERNAME=${GITHUB_USERNAME:-}
 GITHUB_TOKEN=${GITHUB_TOKEN:-}
@@ -225,6 +227,12 @@ build_application() {
 # Install the required PHP extensions
 if [ -n "${PHP_EXTENSIONS}" ]; then
   check_and_install_extension
+fi
+
+# Set the timezone
+if [ -n "${TIMEZONE}" ]; then
+  ln -snf "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime || { echo "Failed to set timezone to '${TIMEZONE}'."; exit 1; }
+  echo "${TIMEZONE}" > /etc/timezone || { echo "Failed to set timezone to '${TIMEZONE}'."; exit 1; }
 fi
 
 # Check if the GITHUB_REPO environment variable is set
