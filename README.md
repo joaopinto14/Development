@@ -12,7 +12,26 @@ testes. Esta imagem foi projetada para ser de fácil utilização e permitir a e
 rápida e eficiente. A imagem é baseada na imagem *Docker* oficial do *Ubuntu* e contém as seguintes ferramentas e
 dependências: *Git*, *CMake*, *GCC*, *G++*, *Make*, *Python*, *Pip*, *Node.js*, *NPM*, *Java*, *Maven*, *Gradle* e *Docker*.
 
+## 📑 Environment Variables
 
+- **PHP_EXTENSIONS**: The *PHP* extensions to be installed. Default: null (e.g.: pdo_mysql mysqli)
+
+
+- **TIMEZONE**: The timezone to be used by system. Default: UTC ([List of Timezones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones))
+
+
+- **GITHUB_REPO**: The repository to be cloned. Default: null (e.g.: joaopinto14/Development)
+- **GITHUB_USERNAME**: The username to be used for *GitHub* authentication. Default: null (e.g.: joaopinto14)
+- **GITHUB_TOKEN**: The token to be used for *GitHub* authentication. Default: null
+- **GITHUB_BRANCH_TAG**: The branch or tag to be cloned. Default: null (e.g.: main) 
+- **GITHUB_UPDATE_AUTO**: The flag to update the repository automatically. Default: false
+
+
+- **COMPOSER_INSTALL**: The flag to install the dependencies with *Composer*. Default: false
+
+
+- **NPM_INSTALL**: The flag to install the dependencies with *NPM*. Default: false
+- **NPM_COMMAND_TO_BUILD**: The command to build the project with *NPM*. Default: null (e.g.: build)
 
 ## ⚒️ **Image Build**
 
