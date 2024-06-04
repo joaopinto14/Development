@@ -1,16 +1,15 @@
 # 🪛  *Development*
 
-&nbsp;&nbsp;&nbsp;&nbsp;Este repositório contém o código fonte da imagem *Docker* "***Development***". Esta imagem
+&nbsp;&nbsp;&nbsp;&nbsp;Este repositório contém o código fonte da imagem *Docker* ***Development***. Esta imagem
 *Docker* foi especificamente projetada para ser de fácil utilização e realizar multiplas tarefas como as de configuração
 de ambiente, instalação de dependências, compilação de código ou execução de testes.
 
 ## 📖 **Project Description**
 
-&nbsp;&nbsp;&nbsp;&nbsp;A imagem *Docker* "***Development***" foi projetada para ser uma ferramenta para o desenvolvimento web e que
-possibilita a execução de tarefas de configuração de ambiente, instalação de dependências, compilação de código e execução de
-testes. Esta imagem foi projetada para ser de fácil utilização e permitir a execução de tarefas de desenvolvimento de forma
-rápida e eficiente. A imagem é baseada na imagem *Docker* oficial do *Ubuntu* e contém as seguintes ferramentas e
-dependências: *Git*, *CMake*, *GCC*, *G++*, *Make*, *Python*, *Pip*, *Node.js*, *NPM*, *Java*, *Maven*, *Gradle* e *Docker*.
+&nbsp;&nbsp;&nbsp;&nbsp;A imagem *Docker* ***Development*** foi projetada para ser uma ferramenta para o desenvolvedor e ajudar
+na execução de tarefas de configuração de ambiente, instalação de dependências, compilação de código e execução de
+testes. 
+
 
 ## 📑 Environment Variables
 
