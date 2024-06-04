@@ -11,6 +11,8 @@ GITHUB_TOKEN=${GITHUB_TOKEN:-}
 GITHUB_BRANCH_TAG=${GITHUB_BRANCH_TAG:-}
 GITHUB_UPDATE_AUTO=${GITHUB_UPDATE_AUTO:-false}
 
+PROJECT_PATH=${PROJECT_PATH:-/var/www/html}
+
 COMPOSER_INSTALL=${COMPOSER_INSTALL:-false}
 
 NPM_INSTALL=${NPM_INSTALL:-false}
@@ -169,52 +171,53 @@ update_repo() {
 
 # Function to install Composer dependencies
 install_composer_dependencies() {
-  if [ -f /var/www/html/composer.json ]; then
+  if [ -f ./composer.json ]; then
     echo "Installing Composer dependencies..."
-    if composer install --no-dev --no-interaction --no-progress --no-suggest; then
+    if composer install --no-dev --no-interaction --no-progress > /dev/null 2>&1; then
       echo "Composer dependencies installed successfully."
     else
       echo "Failed to install Composer dependencies."
       exit 1
     fi
   else
-    echo "The 'composer.json' file was not found in the '/var/www/html' directory."
+    echo "The 'composer.json' file was not found in the '${PROJECT_PATH}' directory."
     exit 1
   fi
 }
 
 # Function to install NPM dependencies
 install_npm_dependencies() {
-  if [ -f /var/www/html/package.json ]; then
+  if [ -f ./package.json ]; then
     echo "Installing NPM dependencies..."
-    if npm install --no-audit --no-fund --no-optional --no-package-lock --no-progress; then
+    if npm install --no-audit --no-fund --omit=optional --no-package-lock --no-progress > /dev/null 2>&1; then
       echo "NPM dependencies installed successfully."
     else
       echo "Failed to install NPM dependencies."
       exit 1
     fi
   else
-    echo "The 'package.json' file was not found in the '/var/www/html' directory."
+    echo "The 'package.json' file was not found in the '${PROJECT_PATH}' directory."
     exit 1
   fi
 }
 
 # Function to build the application
 build_application() {
-  if [ -f /var/www/html/package.json ]; then
+  if [ -f ./package.json ]; then
     echo "Building the application..."
-    if ! jq -e .scripts[\"${NPM_COMMAND_TO_BUILD}\"] /var/www/html/package.json >/dev/null 2>&1; then
+    if ! jq -e .scripts[\"${NPM_COMMAND_TO_BUILD}\"] ./package.json > /dev/null 2>&1; then
       echo "The command ${NPM_COMMAND_TO_BUILD} is not defined in the package.json file."
       exit 1
     fi
-    if npm run "${NPM_COMMAND_TO_BUILD}"; then
-      echo "Command 'npm run ${NPM_COMMAND_TO_BUILD}' executed successfully."
+    npm_command="npm run ${NPM_COMMAND_TO_BUILD}"
+    if ${npm_command}; then
+      echo "Command '${npm_command}' executed successfully."
     else
       echo "Failed to build the application."
       exit 1
     fi
   else
-    echo "The 'package.json' file was not found in the '/var/www/html' directory."
+    echo "The 'package.json' file was not found in the '${PROJECT_PATH}' directory."
     exit 1
   fi
 }
@@ -262,6 +265,8 @@ if [ -n "${GITHUB_REPO}" ]; then
     fi
   fi
 fi
+
+cd $PROJECT_PATH
 
 # Check if the COMPOSER_INSTALL environment variable is set
 if [ "${COMPOSER_INSTALL}" = "true" ]; then
