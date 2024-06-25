@@ -2,7 +2,7 @@ FROM alpine
 
 LABEL maintainer="João Pinto [suport@joaopinto.pt]"
 
-# Install PHP 8.3 and PHP-FPM 8.3
+# Install necessary packages TODO: Verificar os pacotes realmente necessários
 RUN apk update && apk add --no-cache \
     php83 \
     php83-fpm \
@@ -26,21 +26,17 @@ RUN php83 -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" 
     php83 -r "unlink('composer-setup.php');" && \
     mv composer.phar /usr/bin/composer
 
-# Move PHP and PHP-FPM binaries to the default path
-RUN mv /usr/bin/php83 /usr/bin/php && \
-    mv /usr/sbin/php-fpm83 /usr/sbin/php-fpm
+# Rename PHP and PHP-FPM binaries
+RUN mv /usr/bin/php83 /usr/bin/php && mv /usr/sbin/php-fpm83 /usr/sbin/php-fpm
 
-# Copy custom startup script
+# Copy entrypoint script and make it executable
 COPY entrypoint/entrypoint.sh /usr/local/bin/entrypoint.sh
-
-# Make the startup script executable
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Add global git configurations
 RUN git config --global --add safe.directory /var/www/html && \
     git config --global --add advice.detachedHead false
 
-# Set the default working directory
+# Working directory and command
 WORKDIR /var/www/html
-
 CMD ["entrypoint.sh"]
