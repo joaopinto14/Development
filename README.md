@@ -30,6 +30,7 @@ docker build -t development .
 - **AUTO_UPDATE**: If set to `true`, the image will automatically update the installed packages. Default: false
 - **PHP_EXTENSIONS**: The *PHP* extensions to be installed. Default: null (e.g.: pdo_mysql mysqli)
 - **ADDITIONAL_PACKAGES**: Additional packages to be installed. Default: null (e.g.: git zip unzip)
+- **TIMEZONE**: The timezone to be used by system. Default: UTC ([List of Timezones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones))
 
 ## 📝 Issues and Suggestions
 

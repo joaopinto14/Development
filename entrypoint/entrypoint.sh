@@ -4,6 +4,7 @@
 AUTO_UPDATE=${AUTO_UPDATE:-false}
 PHP_EXTENSIONS=${PHP_EXTENSIONS:-}
 ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES:-}
+TIMEZONE=${TIMEZONE:-}
 
 # Functions
 update_packages() {
@@ -56,6 +57,19 @@ install_packages() {
     echo "Packages installed successfully."
 }
 
+# Function to set the timezone
+set_timezone() {
+    echo "Setting timezone to $TIMEZONE"
+    # Check if the timezone is valid
+    if [ -f "/usr/share/zoneinfo/$TIMEZONE" ]; then
+        cp "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime || { echo "Failed to set timezone"; exit 1;}
+        echo "$TIMEZONE" > /etc/timezone || { echo "Failed to set timezone"; exit 1;}
+    else
+        echo "Timezone '$TIMEZONE' is not valid"
+        exit 1
+    fi
+}
+
 
 # Main
 if [ $AUTO_UPDATE ]; then
@@ -68,6 +82,10 @@ fi
 
 if [ -n "$ADDITIONAL_PACKAGES" ]; then
     install_packages
+fi
+
+if [ -n "$TIMEZONE" ]; then
+    set_timezone
 fi
 
 exec php-fpm -F
