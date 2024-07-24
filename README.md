@@ -28,6 +28,7 @@ docker build -t development .
 ## 📑 Environment Variables
 
 - **AUTO_UPDATE**: If set to `true`, the image will automatically update the installed packages. Default: false
+- **PHP_EXTENSIONS**: The *PHP* extensions to be installed. Default: null (e.g.: pdo_mysql mysqli)
 
 ## 📝 Issues and Suggestions
 
