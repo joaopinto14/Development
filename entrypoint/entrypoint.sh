@@ -3,6 +3,7 @@
 # Variables
 AUTO_UPDATE=${AUTO_UPDATE:-false}
 PHP_EXTENSIONS=${PHP_EXTENSIONS:-}
+ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES:-}
 
 # Functions
 update_packages() {
@@ -11,7 +12,7 @@ update_packages() {
         echo "Packages updated successfully."
     else
         echo "Failed to update packages."
-        return 1
+        exit 1
     fi
 }
 
@@ -37,6 +38,24 @@ install_php_extensions() {
     echo "PHP extensions installed successfully."
 }
 
+# Function to install additional packages
+install_packages() {
+    echo "Installing packages..."
+    additional_packages=$(echo "${ADDITIONAL_PACKAGES}" | tr '[:upper:]' '[:lower:]')
+
+    for package in ${additional_packages}; do
+        if echo "$package" | grep -qE '^php[0-9]+|^php-'; then
+            echo "Use the PHP_EXTENSIONS variable to install PHP extensions."
+        else
+            apk add --no-cache "$package" > /dev/null 2>&1 | echo "Failed to install package: $package." && exit 1
+        fi
+    done
+
+    # Clean cache
+    rm -rf /var/cache/apk/*
+    echo "Packages installed successfully."
+}
+
 
 # Main
 if [ $AUTO_UPDATE ]; then
@@ -45,6 +64,10 @@ fi
 
 if [ -n "$PHP_EXTENSIONS" ]; then
     install_php_extensions
+fi
+
+if [ -n "$ADDITIONAL_PACKAGES" ]; then
+    install_packages
 fi
 
 exec php-fpm -F
