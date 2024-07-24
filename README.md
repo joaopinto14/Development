@@ -25,6 +25,10 @@ cd Development
 docker build -t development .
 ```
 
+## 📑 Environment Variables
+
+- **AUTO_UPDATE**: If set to `true`, the image will automatically update the installed packages. Default: false
+
 ## 📝 Issues and Suggestions
 
 &nbsp;&nbsp;&nbsp;&nbsp;If you find any issues related to the image or have suggestions for improvements, do not hesitate to open an
