@@ -23,7 +23,7 @@ jobs:
 
     - name: Extract version from tag
       id: extract_version
-      run: echo "::set-output name=version::${GITHUB_REF/refs\/tags\/v/}"
+      run: echo "version=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_OUTPUT
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
@@ -32,5 +32,5 @@ jobs:
         push: true
         platforms: linux/amd64,linux/arm64,linux/arm/v7
         tags: |
-          ${{ secrets.DOCKER_USERNAME }}/development:${{ steps.extract_version.outputs.version }}
-          ${{ secrets.DOCKER_USERNAME }}/development:latest
+          ${{ secrets.DOCKER_HUB_USERNAME }}/development:${{ steps.extract_version.outputs.version }}
+          ${{ secrets.DOCKER_HUB_USERNAME }}/development:latest
