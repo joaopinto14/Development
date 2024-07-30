@@ -5,6 +5,8 @@ AUTO_UPDATE=${AUTO_UPDATE:-false}
 PHP_EXTENSIONS=${PHP_EXTENSIONS:-}
 ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES:-}
 TIMEZONE=${TIMEZONE:-}
+NPM_INSTALL=${NPM_INSTALL:-false}
+NPM_BUILD=${NPM_BUILD:-false}
 
 # Functions
 update_packages() {
@@ -70,6 +72,38 @@ set_timezone() {
     fi
 }
 
+# Function to install NPM packages
+npm_install() {
+    if [ -f ./package.json ]; then
+        echo "Installing NPM dependencies..."
+        if npm install --no-audit --no-fund --omit=optional --no-package-lock --no-progress > /dev/null 2>&1; then
+            echo "NPM dependencies installed successfully."
+        else
+            echo "Failed to install NPM dependencies."
+            exit 1
+        fi
+    else
+        echo "The 'package.json' file was not found in the '${PROJECT_PATH}' directory."
+        exit 1
+    fi
+}
+
+# Function to build NPM packages
+npm_build() {
+    if [ -f ./package.json ]; then
+        echo "Building NPM packages..."
+        if npm run build > /dev/null 2>&1; then
+            echo "NPM packages built successfully."
+        else
+            echo "Failed to build NPM packages."
+            exit 1
+        fi
+    else
+        echo "The 'package.json' file was not found in the '${PROJECT_PATH}' directory."
+        exit 1
+    fi
+}
+
 
 # Main
 if [ $AUTO_UPDATE ]; then
@@ -86,6 +120,14 @@ fi
 
 if [ -n "$TIMEZONE" ]; then
     set_timezone
+fi
+
+if [ $NPM_INSTALL == "true" ]; then
+    npm_install
+fi
+
+if [ $NPM_BUILD == "true" ]; then
+    npm_build
 fi
 
 exec php-fpm -F
