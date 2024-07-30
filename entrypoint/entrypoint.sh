@@ -5,6 +5,8 @@ AUTO_UPDATE=${AUTO_UPDATE:-false}
 PHP_EXTENSIONS=${PHP_EXTENSIONS:-}
 ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES:-}
 TIMEZONE=${TIMEZONE:-}
+COMPOSER_INSTALL=${COMPOSER_INSTALL:-false}
+
 
 # Functions
 update_packages() {
@@ -70,6 +72,22 @@ set_timezone() {
     fi
 }
 
+# Function to install Composer dependencies
+composer_install() {
+    if [ -f ./composer.json ]; then
+        echo "Installing Composer dependencies..."
+        if composer install --no-dev --no-interaction --no-progress > /dev/null 2>&1; then
+            echo "Composer dependencies installed successfully."
+        else
+            echo "Failed to install Composer dependencies."
+            exit 1
+        fi
+    else
+        echo "The 'composer.json' file was not found in the '${PROJECT_PATH}' directory."
+        exit 1
+    fi
+}
+
 
 # Main
 if [ $AUTO_UPDATE ]; then
@@ -87,5 +105,10 @@ fi
 if [ -n "$TIMEZONE" ]; then
     set_timezone
 fi
+
+if [ $COMPOSER_INSTALL == "true" ]; then
+    composer_install
+fi
+
 
 exec php-fpm -F
