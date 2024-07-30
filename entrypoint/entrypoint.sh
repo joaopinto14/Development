@@ -10,6 +10,7 @@ GITHUB_USERNAME=${GITHUB_USERNAME:-}
 GITHUB_TOKEN=${GITHUB_TOKEN:-}
 GITHUB_BRANCH_TAG=${GITHUB_BRANCH_TAG:-}
 GITHUB_AUTO_UPDATE=${GITHUB_AUTO_UPDATE:-false}
+COMPOSER_INSTALL=${COMPOSER_INSTALL:-false}
 
 
 # Functions
@@ -173,6 +174,22 @@ github_update_repository() {
     fi
 }
 
+# Function to install Composer dependencies
+composer_install() {
+    if [ -f ./composer.json ]; then
+        echo "Installing Composer dependencies..."
+        if composer install --no-dev --no-interaction --no-progress > /dev/null 2>&1; then
+            echo "Composer dependencies installed successfully."
+        else
+            echo "Failed to install Composer dependencies."
+            exit 1
+        fi
+    else
+        echo "The 'composer.json' file was not found in the '${PROJECT_PATH}' directory."
+        exit 1
+    fi
+}
+
 
 # Main
 if [ $AUTO_UPDATE == "true" ]; then
@@ -208,6 +225,10 @@ if [ -n "$GITHUB_REPO" ]; then
             exit 1
         fi
     fi
+fi
+
+if [ $COMPOSER_INSTALL == "true" ]; then
+    composer_install
 fi
 
 exec php-fpm -F
